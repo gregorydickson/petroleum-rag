@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 from config import settings
 from embeddings import get_embedder
-from evaluation import Evaluator
+from evaluation import get_evaluator
 from models import BenchmarkQuery, BenchmarkResult, ParsedDocument
 from parsers import (
     DoclingParser,
@@ -71,8 +71,11 @@ class BenchmarkRunner:
 
         # Initialize embedder and evaluator
         self.embedder = get_embedder()
-        self.evaluator = Evaluator()
-        logger.info(f"Initialized embedder ({settings.embedding_provider}) and evaluator")
+        self.evaluator = get_evaluator()
+        logger.info(
+            f"Initialized embedder ({settings.embedding_provider}) and "
+            f"evaluator ({settings.eval_llm_provider})"
+        )
 
         # Results storage
         self.parsed_documents: dict[str, ParsedDocument] = {}

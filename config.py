@@ -134,9 +134,17 @@ class Settings(BaseSettings):
     )
 
     # Evaluation Settings
+    eval_llm_provider: Literal["anthropic", "vertex"] = Field(
+        default="anthropic",
+        description="LLM provider for evaluation (anthropic or vertex)",
+    )
     eval_llm_model: str = Field(
         default="claude-sonnet-4-20250514",
-        description="LLM model for evaluation and answer generation",
+        description="Anthropic model for evaluation and answer generation",
+    )
+    vertex_llm_model: str = Field(
+        default="gemini-1.5-pro",
+        description="Vertex AI Gemini model for evaluation (if using vertex provider)",
     )
     eval_llm_temperature: float = Field(
         default=0.0,
