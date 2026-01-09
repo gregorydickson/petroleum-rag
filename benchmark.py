@@ -17,7 +17,7 @@ from typing import Any
 from tqdm import tqdm
 
 from config import settings
-from embeddings import UnifiedEmbedder
+from embeddings import get_embedder
 from evaluation import Evaluator
 from models import BenchmarkQuery, BenchmarkResult, ParsedDocument
 from parsers import (
@@ -70,9 +70,9 @@ class BenchmarkRunner:
         logger.info(f"Initialized {len(self.storage_backends)} storage backends")
 
         # Initialize embedder and evaluator
-        self.embedder = UnifiedEmbedder()
+        self.embedder = get_embedder()
         self.evaluator = Evaluator()
-        logger.info("Initialized embedder and evaluator")
+        logger.info(f"Initialized embedder ({settings.embedding_provider}) and evaluator")
 
         # Results storage
         self.parsed_documents: dict[str, ParsedDocument] = {}

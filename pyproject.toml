@@ -24,6 +24,7 @@ dependencies = [
     "anthropic>=0.18.0",
     "openai>=1.12.0",
     "sentence-transformers>=2.3.0",
+    "google-cloud-aiplatform>=1.38.0",  # For Vertex AI embeddings
 
     # Data & Visualization
     "pandas>=2.2.0",

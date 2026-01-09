@@ -104,9 +104,13 @@ class Settings(BaseSettings):
     )
 
     # Embedding Model Settings
+    embedding_provider: Literal["openai", "vertex"] = Field(
+        default="openai",
+        description="Embedding provider (openai or vertex)",
+    )
     embedding_model: str = Field(
         default="text-embedding-3-small",
-        description="OpenAI embedding model",
+        description="OpenAI embedding model or Vertex model name",
     )
     embedding_dimension: int = Field(
         default=1536,
@@ -117,6 +121,12 @@ class Settings(BaseSettings):
         ge=1,
         le=2048,
         description="Batch size for embedding generation",
+    )
+
+    # Vertex AI Embedding Settings
+    vertex_embedding_model: str = Field(
+        default="textembedding-gecko@003",
+        description="Vertex AI embedding model name",
     )
 
     # Evaluation Settings
