@@ -223,7 +223,9 @@ def main():
     st.sidebar.success(f"Winner: {winner_parser} + {winner_storage}")
 
     # Tabs
-    tab1, tab2, tab3 = st.tabs(["📊 Results", "💬 Chat Demo", "📈 Charts"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        ["📊 Results", "💬 Chat Demo", "📈 Charts", "🔬 How It Works", "🏗️ Architecture"]
+    )
 
     # Tab 1: Results
     with tab1:
@@ -432,6 +434,474 @@ def main():
                 report_content = f.read()
 
             st.markdown(report_content)
+
+    # Tab 4: How It Works
+    with tab4:
+        st.header("🔬 How the Benchmark Works")
+
+        st.markdown("""
+        Welcome! This page explains the benchmarking process in simple terms.
+        """)
+
+        # Step-by-step process
+        st.subheader("The Benchmark Process (Step-by-Step)")
+
+        # Step 1
+        st.markdown("### 📄 Step 1: Upload Your Documents")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.markdown("""
+            You provide PDF documents (like technical handbooks, specifications, etc.)
+            by placing them in the `data/input/` folder.
+
+            **Example:** A petroleum refining handbook with tables, diagrams, and technical specs.
+            """)
+        with col2:
+            st.info("**Input**\n\n📁 Your PDF files")
+
+        st.divider()
+
+        # Step 2
+        st.markdown("### 🔄 Step 2: Document Parsing (4 Different Ways)")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.markdown("""
+            We test **4 different parsers** to see which one extracts information best:
+
+            - **🦙 LlamaParse**: Cloud-based, great for complex tables
+            - **🧠 Docling**: IBM's parser, good for structure preservation
+            - **📄 PageIndex**: Semantic chunking approach
+            - **☁️ Vertex AI**: Google's enterprise OCR
+
+            Each parser reads your PDF differently and creates "chunks" of text.
+            """)
+        with col2:
+            st.success("**Output**\n\n4 parsed versions\nof your document")
+
+        st.divider()
+
+        # Step 3
+        st.markdown("### 💾 Step 3: Storage (3 Different Databases)")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.markdown("""
+            Each parsed version is stored in **3 different databases**:
+
+            - **🎯 ChromaDB**: Fast vector similarity search
+            - **🔀 Weaviate**: Hybrid search (keywords + meaning)
+            - **🕸️ FalkorDB**: Graph database with relationships
+
+            **Math:** 4 parsers × 3 databases = **12 combinations** to test!
+            """)
+        with col2:
+            st.info("**Output**\n\n12 different\nRAG systems")
+
+        st.divider()
+
+        # Step 4
+        st.markdown("### 🎯 Step 4: Testing with Real Questions")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.markdown("""
+            We ask **15 petroleum engineering questions** to each of the 12 combinations.
+
+            **Example questions:**
+            - "What are the pressure ratings for 2-inch valves?"
+            - "What safety procedures are required for H2S?"
+            - "Compare corrosion prevention methods"
+
+            **Total tests:** 15 questions × 12 combinations = **180 tests**
+            """)
+        with col2:
+            st.success("**Output**\n\n180 answers\nwith sources")
+
+        st.divider()
+
+        # Step 5
+        st.markdown("### 📊 Step 5: Measuring Quality")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.markdown("""
+            We measure each answer using **multiple metrics**:
+
+            **Accuracy Metrics:**
+            - ✅ Precision: Are the results relevant?
+            - ✅ Recall: Did we find all relevant information?
+            - ✅ NDCG: Is the ranking correct?
+
+            **Quality Metrics:**
+            - ✨ Relevance: Does the answer match the question?
+            - 🎯 Correctness: Is the answer accurate?
+            - 🛡️ Faithfulness: Is it supported by the sources?
+            """)
+        with col2:
+            st.info("**Output**\n\nQuality scores\nfor each combo")
+
+        st.divider()
+
+        # Step 6
+        st.markdown("### 🏆 Step 6: Finding the Winner")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.markdown("""
+            We combine all the metrics into a **composite score** and rank all 12 combinations.
+
+            The combination with the highest score wins!
+
+            **Current winner:** {winner}
+            """.format(winner=f"**{winner_parser} + {winner_storage}**" if not df.empty else "Not yet determined"))
+        with col2:
+            st.success("**Output**\n\n🏆 Best\nconfiguration!")
+
+        st.divider()
+
+        # Visual timeline
+        st.subheader("⏱️ Typical Processing Time")
+
+        timeline_data = {
+            "Phase": ["📄 Parsing", "💾 Storage", "🎯 Testing", "📊 Analysis"],
+            "Time": [22, 17, 12, 1],
+            "Description": [
+                "4 parsers process your PDF",
+                "Store in 3 databases (12 combinations)",
+                "Run 15 queries × 12 combos = 180 tests",
+                "Calculate metrics and generate charts"
+            ]
+        }
+
+        timeline_df = pd.DataFrame(timeline_data)
+
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.dataframe(
+                timeline_df,
+                use_container_width=True,
+                hide_index=True
+            )
+        with col2:
+            st.metric("Total Time (First Run)", "~52 minutes", help="For an 11MB PDF with 15 queries")
+            st.metric("Total Time (Cached)", "~15 minutes", delta="-37 min", help="Thanks to 97% cache hit rate!")
+
+        st.divider()
+
+        # What happens next
+        st.subheader("💡 What Happens Next?")
+
+        st.markdown("""
+        After the benchmark completes, you can:
+
+        1. **📊 View Results** - See which combination won and compare all 12
+        2. **💬 Chat** - Ask questions using the winning configuration
+        3. **📈 Analyze Charts** - Explore detailed visualizations
+        4. **🚀 Deploy** - Use the winning combination in production
+
+        The winning combination is automatically used in the **Chat Demo** tab!
+        """)
+
+    # Tab 5: Architecture
+    with tab5:
+        st.header("🏗️ System Architecture")
+
+        st.markdown("""
+        This page shows you the components of the application and how they work together.
+        """)
+
+        # High-level architecture
+        st.subheader("🎯 High-Level Overview")
+
+        st.markdown("""
+        ```
+        ┌─────────────────────────────────────────────────────────────┐
+        │                   PETROLEUM RAG BENCHMARK                    │
+        │                                                              │
+        │  You upload PDFs → We test 12 configurations → Find winner  │
+        └─────────────────────────────────────────────────────────────┘
+                                    │
+                    ┌───────────────┼───────────────┐
+                    │               │               │
+                    ▼               ▼               ▼
+              ┌─────────┐     ┌─────────┐     ┌─────────┐
+              │ PARSERS │     │ STORAGE │     │  EVAL   │
+              │  (4)    │     │  (3)    │     │ METRICS │
+              └─────────┘     └─────────┘     └─────────┘
+                    │               │               │
+                    └───────────────┼───────────────┘
+                                    ▼
+                            🏆 WINNING COMBO
+        ```
+        """)
+
+        st.divider()
+
+        # Component details
+        st.subheader("🔍 Component Details")
+
+        # Parsers
+        with st.expander("📄 **PARSERS** - Convert PDFs to Searchable Text", expanded=True):
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+                st.markdown("""
+                **🦙 LlamaParse**
+
+                *Cloud-based parser*
+
+                ✅ Excellent table extraction
+                ✅ Multi-column layouts
+                ✅ Complex documents
+
+                ⚡ Speed: Medium
+                💰 Cost: API calls
+                """)
+
+            with col2:
+                st.markdown("""
+                **🧠 Docling**
+
+                *IBM Research parser*
+
+                ✅ Structure preservation
+                ✅ Semantic chunking
+                ✅ Local processing
+
+                ⚡ Speed: Fast
+                💰 Cost: Free
+                """)
+
+            with col3:
+                st.markdown("""
+                **📄 PageIndex**
+
+                *Semantic approach*
+
+                ✅ Context preservation
+                ✅ Semantic boundaries
+                ✅ Page relationships
+
+                ⚡ Speed: Fast
+                💰 Cost: Free
+                """)
+
+            with col4:
+                st.markdown("""
+                **☁️ Vertex AI**
+
+                *Google Cloud parser*
+
+                ✅ Enterprise OCR
+                ✅ Form extraction
+                ✅ High accuracy
+
+                ⚡ Speed: Medium
+                💰 Cost: API calls
+                """)
+
+        # Storage
+        with st.expander("💾 **STORAGE** - Store and Retrieve Information", expanded=True):
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.markdown("""
+                **🎯 ChromaDB**
+
+                *Vector similarity search*
+
+                **How it works:**
+                - Converts text to numbers (embeddings)
+                - Finds similar meanings
+                - Pure semantic search
+
+                **Best for:**
+                - Fast semantic queries
+                - Simple setup
+                - Single-hop questions
+
+                ⚡ Speed: Very Fast
+                🎯 Accuracy: Good
+                """)
+
+            with col2:
+                st.markdown("""
+                **🔀 Weaviate**
+
+                *Hybrid search engine*
+
+                **How it works:**
+                - Combines semantic + keywords
+                - BM25 keyword matching
+                - Vector similarity
+
+                **Best for:**
+                - Mixed query types
+                - Exact + semantic matches
+                - Production systems
+
+                ⚡ Speed: Fast
+                🎯 Accuracy: Excellent
+                """)
+
+            with col3:
+                st.markdown("""
+                **🕸️ FalkorDB**
+
+                *Graph database*
+
+                **How it works:**
+                - Stores relationships
+                - Graph traversal
+                - Multi-hop queries
+
+                **Best for:**
+                - Connected information
+                - Complex relationships
+                - Multi-step reasoning
+
+                ⚡ Speed: Medium
+                🎯 Accuracy: Very Good
+                """)
+
+        # Evaluation
+        with st.expander("📊 **EVALUATION** - Measure Quality", expanded=True):
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.markdown("""
+                **📈 Traditional Metrics**
+
+                *Mathematical precision*
+
+                - **Precision@K**: % of results that are relevant
+                - **Recall@K**: % of all relevant docs found
+                - **F1 Score**: Balance of precision & recall
+                - **NDCG**: Ranking quality (0-1)
+                - **MRR**: Mean reciprocal rank
+                - **MAP**: Mean average precision
+
+                These metrics are objective and mathematical.
+                """)
+
+            with col2:
+                st.markdown("""
+                **🤖 LLM-Based Metrics**
+
+                *AI-powered evaluation*
+
+                - **Context Relevance**: Are sources relevant?
+                - **Answer Correctness**: Is answer accurate?
+                - **Faithfulness**: Supported by sources?
+                - **Semantic Similarity**: Matches intent?
+                - **Completeness**: Full answer?
+                - **Hallucination Check**: Made up info?
+
+                These metrics use Claude to judge quality.
+                """)
+
+        st.divider()
+
+        # Data flow
+        st.subheader("🔄 Data Flow: From PDF to Answer")
+
+        st.markdown("""
+        ```
+        1️⃣  PDF Document
+              │
+              ▼
+        2️⃣  Parser extracts text & tables
+              │
+              ▼
+        3️⃣  Text split into chunks (with overlap)
+              │
+              ▼
+        4️⃣  Chunks converted to embeddings (vectors)
+              │
+              ▼
+        5️⃣  Embeddings stored in database
+              │
+              ▼
+        6️⃣  User asks a question
+              │
+              ▼
+        7️⃣  Question converted to embedding
+              │
+              ▼
+        8️⃣  Database finds similar chunks
+              │
+              ▼
+        9️⃣  LLM generates answer from chunks
+              │
+              ▼
+        🔟 Answer + sources returned to user
+        ```
+        """)
+
+        st.divider()
+
+        # Technologies used
+        st.subheader("🛠️ Technologies & APIs")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.markdown("""
+            **Parsers**
+            - LlamaParse API
+            - Docling (IBM)
+            - Custom PageIndex
+            - Google Vertex AI
+            """)
+
+        with col2:
+            st.markdown("""
+            **Storage**
+            - ChromaDB
+            - Weaviate
+            - FalkorDB (Redis)
+            - Docker containers
+            """)
+
+        with col3:
+            st.markdown("""
+            **AI & Processing**
+            - OpenAI embeddings
+            - Claude (Anthropic)
+            - Python/asyncio
+            - Streamlit UI
+            """)
+
+        st.divider()
+
+        # Why this matters
+        st.subheader("💡 Why Test All These Combinations?")
+
+        st.markdown("""
+        Different documents need different approaches! Here's why we test everything:
+
+        **📊 Tables & Data**
+        - Some parsers extract tables better than others
+        - LlamaParse excels at complex tables
+
+        **🔍 Search Types**
+        - Keyword search: Weaviate's BM25
+        - Semantic search: ChromaDB's vectors
+        - Relationships: FalkorDB's graphs
+
+        **⚡ Speed vs Accuracy**
+        - ChromaDB is fastest
+        - Weaviate balances speed & accuracy
+        - FalkorDB handles complex queries
+
+        **💰 Cost**
+        - Local parsers are free
+        - Cloud APIs cost money
+        - We help you find the best value!
+
+        **By testing all 12 combinations, we find the BEST setup for YOUR specific documents!**
+        """)
+
+        st.success("""
+        🏆 **The Result?** You get a production-ready RAG system optimized for
+        petroleum engineering documents, with proof that it works!
+        """)
 
 
 if __name__ == "__main__":
