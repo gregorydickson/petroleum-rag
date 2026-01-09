@@ -1,0 +1,56 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch",
+      "Task(*)",
+      "TaskOutput(*)",
+      "KillShell(*)",
+      "NotebookEdit(*)",
+      "AskUserQuestion(*)",
+      "Skill(*)",
+      "EnterPlanMode",
+      "ExitPlanMode",
+      "TodoWrite(*)",
+      "mcp__memorygraph__recall_memories(*)",
+      "mcp__memorygraph__store_memory(*)",
+      "mcp__memorygraph__get_memory(*)",
+      "mcp__memorygraph__search_memories(*)",
+      "mcp__memorygraph__update_memory(*)",
+      "mcp__memorygraph__delete_memory(*)",
+      "mcp__memorygraph__create_relationship(*)",
+      "mcp__memorygraph__get_related_memories(*)",
+      "mcp__memorygraph__get_recent_activity(*)",
+      "mcp__plugin_context7_context7__resolve-library-id(*)",
+      "mcp__plugin_context7_context7__query-docs(*)",
+      "Bash(grep:*)",
+      "Bash(git init:*)",
+      "Bash(git remote:*)",
+      "Bash(git add:*)"
+    ]
+  },
+  "skipConfirmationMessages": [
+    "tool_use",
+    "file_edit",
+    "file_write",
+    "bash_command",
+    "web_fetch",
+    "web_search",
+    "task_spawn",
+    "plan_mode"
+  ],
+  "autoApprove": {
+    "bash": true,
+    "fileOperations": true,
+    "webAccess": true,
+    "tasks": true,
+    "planMode": true,
+    "allTools": true
+  }
+}

@@ -1,0 +1,61 @@
+petroleum-rag/
+├── 📄 README.md                    # Main documentation
+├── 🐍 benchmark.py                 # Main benchmark runner
+├── 🎨 demo_app.py                  # Streamlit UI
+├── 📊 analyze_results.py           # Results analysis
+├── ✅ verify_setup.py               # Setup verification
+├── 🚀 start_app.sh                 # One-command startup
+├── ⚙️  config.py                    # Configuration
+├── 📋 models.py                    # Data models
+├── 🐳 docker-compose.yml           # Docker services
+├── 📝 .env.example                 # Environment template
+├── 🔧 pyproject.toml               # Dependencies
+├── 🚫 .gitignore                   # Git ignore rules
+│
+├── 📚 docs/                        # All documentation
+│   ├── QUICK_START.md
+│   ├── GCP_DEPLOY_README.md
+│   ├── GCP_SERVERLESS_README.md
+│   ├── ARCHITECTURE.md
+│   ├── ARCHITECTURE_COMPARISON.md
+│   ├── USER_GUIDE.md
+│   ├── API_REFERENCE.md
+│   └── DEPLOYMENT.md
+│
+├── 🔧 scripts/                     # Utility scripts
+│   ├── deployment/                 # Deployment scripts
+│   │   ├── deploy_to_gcp.sh
+│   │   └── deploy_cloudrun_serverless.sh
+│   ├── start_monitoring.sh
+│   ├── demo_llamaparse.py
+│   ├── monitoring_server.py
+│   └── verify_*.py                 # Verification scripts
+│
+├── ⚙️  config/                      # Configuration files
+│   └── prometheus.yml
+│
+├── 🔍 parsers/                     # Parser implementations
+│   ├── llamaparse_parser.py
+│   ├── docling_parser.py
+│   ├── pageindex_parser.py
+│   └── vertex_parser.py
+│
+├── 💾 storage/                     # Storage implementations
+│   ├── chroma_store.py
+│   ├── weaviate_store.py
+│   └── falkordb_store.py
+│
+├── 📊 evaluation/                  # Evaluation framework
+│   ├── evaluator.py
+│   ├── metrics.py
+│   └── queries.json
+│
+├── 🎯 embeddings/                  # Embedding utilities
+├── 🛠️  utils/                      # Shared utilities
+├── 🧪 tests/                       # Test suite (259 tests)
+│
+└── 📂 data/                        # Data directories
+    ├── input/                      # Your PDFs
+    ├── parsed/                     # Parsed documents
+    ├── results/                    # Benchmark results
+    └── cache/                      # Embeddings cache

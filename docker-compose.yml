@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  # Chroma - Vector Database
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: petroleum-rag-chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Weaviate - Hybrid Search
+  weaviate:
+    image: semitechnologies/weaviate:1.24.4
+    container_name: petroleum-rag-weaviate
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - DEFAULT_VECTORIZER_MODULE=none
+      - QUERY_DEFAULTS_LIMIT=25
+      - CLUSTER_HOSTNAME=node1
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  # FalkorDB - Graph Database
+  falkordb:
+    image: falkordb/falkordb:latest
+    container_name: petroleum-rag-falkordb
+    ports:
+      - "6379:6379"
+    volumes:
+      - falkordb_data:/data
+    command: ["redis-server", "--loadmodule", "/usr/lib/redis/modules/falkordb.so"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Prometheus - Metrics Collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: petroleum-rag-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    depends_on:
+      - chroma
+      - weaviate
+      - falkordb
+
+  # Grafana - Metrics Visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: petroleum-rag-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_INSTALL_PLUGINS=
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+volumes:
+  chroma_data:
+    driver: local
+  weaviate_data:
+    driver: local
+  falkordb_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  default:
+    name: petroleum-rag-network

@@ -1,0 +1,120 @@
+# Prometheus configuration for RAG Benchmark System
+#
+# This configuration defines:
+# - Global settings for data collection
+# - Scrape configs for metrics endpoints
+# - Alerting rules (optional)
+
+global:
+  scrape_interval: 15s      # How frequently to scrape targets
+  evaluation_interval: 15s  # How frequently to evaluate rules
+  scrape_timeout: 10s       # How long to wait for scrape to complete
+
+  # Attach these labels to any time series or alerts when communicating
+  # with external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    environment: 'development'
+    cluster: 'local'
+    service: 'petroleum-rag'
+
+# Scrape configurations
+scrape_configs:
+  # RAG Monitoring Server (FastAPI)
+  - job_name: 'rag_benchmark'
+    static_configs:
+      - targets: ['host.docker.internal:9090']
+        labels:
+          component: 'monitoring_server'
+          type: 'application'
+
+    # Scrape path for Prometheus metrics
+    metrics_path: '/metrics'
+
+    # How often to scrape this target
+    scrape_interval: 10s
+    scrape_timeout: 8s
+
+    # Optional: Add custom labels to all metrics from this job
+    metric_relabel_configs:
+      # Keep all RAG-related metrics
+      - source_labels: [__name__]
+        regex: 'rag_.*'
+        action: keep
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          component: 'prometheus'
+          type: 'infrastructure'
+
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+
+  # ChromaDB metrics (if available)
+  - job_name: 'chromadb'
+    static_configs:
+      - targets: ['chroma:8000']
+        labels:
+          component: 'chromadb'
+          type: 'storage'
+
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+
+    # Continue scraping even if target is down
+    honor_labels: true
+
+    # Optional: only scrape if endpoint exists
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: chroma:8000
+
+  # Weaviate metrics (if available)
+  - job_name: 'weaviate'
+    static_configs:
+      - targets: ['weaviate:8080']
+        labels:
+          component: 'weaviate'
+          type: 'storage'
+
+    scrape_interval: 30s
+    metrics_path: '/v1/metrics'
+
+    honor_labels: true
+
+  # FalkorDB/Redis metrics (if available)
+  - job_name: 'falkordb'
+    static_configs:
+      - targets: ['falkordb:6379']
+        labels:
+          component: 'falkordb'
+          type: 'storage'
+
+    scrape_interval: 30s
+
+    # FalkorDB is built on Redis, which doesn't expose Prometheus metrics by default
+    # This is a placeholder for if you add a Redis exporter
+    honor_labels: true
+
+# Alerting configuration (optional)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['alertmanager:9093']
+
+# Rule files (optional)
+# rule_files:
+#   - 'alert_rules.yml'
+#   - 'recording_rules.yml'
+
+# Storage configuration
+# storage:
+#   tsdb:
+#     retention.time: 15d
+#     retention.size: 10GB

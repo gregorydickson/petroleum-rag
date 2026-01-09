@@ -1,0 +1,137 @@
+[
+  {
+    "query_id": "q1_table",
+    "query": "What is the maximum allowable working pressure for API 6A 2-inch gate valves rated at 5000 PSI?",
+    "ground_truth_answer": "The maximum allowable working pressure for API 6A 2-inch gate valves with a 5000 PSI rating is 5000 PSI at standard temperature conditions (-20°F to 250°F).",
+    "relevant_element_ids": ["api6a_table_pressure_ratings", "valve_specs_table_2inch"],
+    "query_type": "table",
+    "difficulty": "easy",
+    "note": "Tests ability to extract specific values from pressure rating tables - common in API standards"
+  },
+  {
+    "query_id": "q2_table",
+    "query": "What are the temperature derating factors for Class 1500 flanges operating above 300°F?",
+    "ground_truth_answer": "For Class 1500 flanges: 400°F requires 0.95 derating factor, 500°F requires 0.90 derating factor, 600°F requires 0.85 derating factor.",
+    "relevant_element_ids": ["flange_derating_table", "temperature_limits_class1500"],
+    "query_type": "table",
+    "difficulty": "medium",
+    "note": "Tests extraction of multiple related values from temperature derating tables"
+  },
+  {
+    "query_id": "q3_table",
+    "query": "Compare the burst pressure ratings between carbon steel and stainless steel 316 pipes at 3-inch nominal diameter.",
+    "ground_truth_answer": "For 3-inch nominal diameter pipes: Carbon steel (Grade B) has burst pressure of 8,200 PSI; Stainless steel 316 has burst pressure of 9,100 PSI. SS316 provides approximately 11% higher burst strength.",
+    "relevant_element_ids": ["pipe_burst_table", "material_properties_table"],
+    "query_type": "table",
+    "difficulty": "hard",
+    "note": "Tests cross-table comparison and calculation - requires finding data from multiple tables"
+  },
+  {
+    "query_id": "q4_keyword",
+    "query": "API 17D subsea control system hydraulic pressure 3000 PSI accumulator capacity",
+    "ground_truth_answer": "API 17D requires subsea control systems operating at 3000 PSI to have minimum accumulator capacity of 80 gallons for 10 emergency operations with safety margin.",
+    "relevant_element_ids": ["api17d_hydraulic_specs", "accumulator_requirements"],
+    "query_type": "keyword",
+    "difficulty": "easy",
+    "note": "Tests keyword matching on technical specifications - ideal for Weaviate BM25"
+  },
+  {
+    "query_id": "q5_keyword",
+    "query": "H2S NACE MR0175 material selection sour gas environment sulfide stress cracking",
+    "ground_truth_answer": "NACE MR0175/ISO 15156 specifies materials resistant to sulfide stress cracking in H2S environments. For partial pressures above 0.05 psi H2S, use Grade 316/316L stainless steel or higher alloys. Carbon steel limited to HRC 22 maximum hardness.",
+    "relevant_element_ids": ["nace_mr0175_requirements", "ssc_material_table", "h2s_limits"],
+    "query_type": "keyword",
+    "difficulty": "medium",
+    "note": "Tests keyword matching with technical acronyms - sour gas service is critical safety topic"
+  },
+  {
+    "query_id": "q6_keyword",
+    "query": "API RP 14C wellhead platform emergency shutdown ESD valve fail-safe closure time",
+    "ground_truth_answer": "API RP 14C requires emergency shutdown (ESD) valves on wellhead platforms to achieve full closure within 30 seconds maximum, with fail-safe spring return mechanism.",
+    "relevant_element_ids": ["api14c_esd_requirements", "valve_closure_specs"],
+    "query_type": "keyword",
+    "difficulty": "easy",
+    "note": "Tests exact specification lookup with multiple technical terms"
+  },
+  {
+    "query_id": "q7_semantic",
+    "query": "What should I do if I notice orange discoloration and pitting on the exterior surface of a subsea valve body?",
+    "ground_truth_answer": "Orange discoloration with pitting indicates corrosion. Immediately tag the valve out of service, document with photos, measure pit depth with ultrasonic gauge. If pits exceed 10% wall thickness, replace the valve. If less, evaluate per API 579 fitness-for-service. Investigate cathodic protection system and coating integrity.",
+    "relevant_element_ids": ["corrosion_inspection_procedures", "valve_maintenance_section", "fitness_for_service_criteria"],
+    "query_type": "semantic",
+    "difficulty": "medium",
+    "note": "Tests understanding of symptoms (rust) to diagnosis (corrosion) to action (inspection procedures)"
+  },
+  {
+    "query_id": "q8_semantic",
+    "query": "How can I tell if a pressure relief valve is experiencing chattering and what causes this problem?",
+    "ground_truth_answer": "Chattering manifests as rapid opening/closing cycles, audible clicking or rattling, and oscillating discharge. Causes include: oversized valve (set pressure too close to operating pressure), backpressure exceeding 10% of set pressure, or inlet pressure drop. Solutions: verify sizing calculations, check discharge piping for restrictions, consider pilot-operated PRV for stable operation.",
+    "relevant_element_ids": ["prv_troubleshooting", "valve_sizing_guidelines", "common_failure_modes"],
+    "query_type": "semantic",
+    "difficulty": "hard",
+    "note": "Tests conceptual understanding of symptoms, root causes, and remediation - requires connecting multiple concepts"
+  },
+  {
+    "query_id": "q9_semantic",
+    "query": "What are the signs that a wellhead is experiencing annular pressure buildup?",
+    "ground_truth_answer": "Signs of annular pressure buildup (APB): sustained pressure on A or B annulus, pressure increasing over time between bleed-downs, pressure exceeding hydrostatic expectations, no communication with tubing pressure. Monitor with permanently installed pressure gauges. If confirmed, investigate causes: thermal expansion, gas migration, or casing leak.",
+    "relevant_element_ids": ["apb_detection", "wellhead_monitoring", "annular_pressure_guidance"],
+    "query_type": "semantic",
+    "difficulty": "medium",
+    "note": "Tests understanding of abnormal well conditions from observable indicators"
+  },
+  {
+    "query_id": "q10_multihop",
+    "query": "What safety procedures are required before performing maintenance on a high-pressure gate valve in sour gas service?",
+    "ground_truth_answer": "Before maintenance on high-pressure sour gas valves: (1) Obtain hot work permit and gas test clearance, (2) Isolate with double block and bleed, verify zero pressure, (3) Perform H2S atmospheric monitoring - must be <10 ppm, (4) Don SCBA and Level A chemical suit if H2S risk, (5) Have rescue team on standby, (6) Verify valve is depressurized via bleed valve, (7) Lock-out/tag-out per API RP 2009, (8) Confirm material compatibility per NACE MR0175 before reassembly.",
+    "relevant_element_ids": ["lockout_procedures", "h2s_safety_protocol", "valve_isolation_requirements", "ppe_requirements_sour_gas", "maintenance_permits"],
+    "query_type": "multi_hop",
+    "difficulty": "hard",
+    "note": "Tests cross-referencing safety procedures, H2S protocols, isolation requirements, and PPE standards"
+  },
+  {
+    "query_id": "q11_multihop",
+    "query": "What inspections and documentation are needed to re-certify a pressure vessel that has been idle for 18 months?",
+    "ground_truth_answer": "For re-certification after 18-month idle period: (1) External visual inspection per API 510 for corrosion, coating degradation, (2) Ultrasonic thickness measurements at minimum 4 locations to verify wall thickness, (3) Internal inspection if required by jurisdiction - check for pitting, deposits, (4) Hydrostatic pressure test at 1.3x MAWP if internal inspection not performed, (5) Update pressure vessel logbook with inspection findings, (6) Review and update relief valve certifications - test if >5 years, (7) Obtain authorized inspector approval before return to service, (8) Update P&ID drawings if modifications made.",
+    "relevant_element_ids": ["api510_inspection_requirements", "vessel_recertification_procedures", "ndt_testing_protocols", "documentation_requirements", "relief_valve_testing"],
+    "query_type": "multi_hop",
+    "difficulty": "hard",
+    "note": "Tests integration of inspection standards, testing procedures, documentation requirements, and regulatory compliance"
+  },
+  {
+    "query_id": "q12_multihop",
+    "query": "If a well test shows higher than expected water cut, what sequential steps should be taken to diagnose and address the issue?",
+    "ground_truth_answer": "Sequential diagnosis for high water cut: (1) Verify measurement accuracy - recalibrate test separator, check BS&W analysis, (2) Review production history - check for sudden change vs. gradual increase, (3) Analyze water chemistry - compare to formation water signature to identify source (coning, channeling, casing leak), (4) Perform pressure transient analysis to detect communication paths, (5) Run production logging (PLT) to identify water entry point, (6) Consider solutions based on diagnosis: if coning - reduce rate or install downhole water separator; if channeling - plan polymer gel treatment; if casing leak - run cement bond log and plan squeeze cementing, (7) Update reservoir model with findings.",
+    "relevant_element_ids": ["water_cut_analysis", "well_testing_procedures", "production_logging_interpretation", "remediation_options", "reservoir_diagnostics"],
+    "query_type": "multi_hop",
+    "difficulty": "hard",
+    "note": "Tests sequential reasoning across testing, diagnosis, and remediation - requires production engineering knowledge"
+  },
+  {
+    "query_id": "q13_numerical",
+    "query": "Calculate the required wall thickness for a carbon steel pipe operating at 1500 PSI internal pressure, 6-inch outer diameter, with allowable stress of 20,000 PSI.",
+    "ground_truth_answer": "Using Barlow's formula: t = (P × D) / (2 × S × E), where P=1500 PSI, D=6 inches, S=20,000 PSI, E=1.0 (seamless). t = (1500 × 6) / (2 × 20,000 × 1.0) = 0.225 inches minimum. With 12.5% corrosion allowance: t_required = 0.225 + 0.0625 = 0.2875 inches. Specify Schedule 40 pipe (0.280\" wall) as nearest standard size.",
+    "relevant_element_ids": ["pipe_wall_thickness_formula", "allowable_stress_table", "corrosion_allowance_guidelines", "pipe_schedule_table"],
+    "query_type": "numerical",
+    "difficulty": "medium",
+    "note": "Tests formula application with lookup of standard specifications - common pressure vessel calculation"
+  },
+  {
+    "query_id": "q14_numerical",
+    "query": "What is the flow rate through a 3-inch orifice plate with 0.65 coefficient, 2500 PSI upstream and 2200 PSI downstream pressure, gas specific gravity 0.65?",
+    "ground_truth_answer": "Using orifice flow equation for gas: Q = 1891.8 × C × d² × √(ΔP × P1 / (G × T × Z)), where C=0.65, d=3\", ΔP=300 PSI, P1=2500 PSIA, G=0.65, T=520°R (60°F), Z=0.90. Q = 1891.8 × 0.65 × 9 × √(300 × 2500 / (0.65 × 520 × 0.90)) = 1891.8 × 5.85 × √(750000 / 304.2) = 1891.8 × 5.85 × 49.66 = 549,000 SCFD (approximately). Note: Verify Z-factor and temperature for actual conditions.",
+    "relevant_element_ids": ["orifice_flow_equation", "gas_flow_coefficients", "compressibility_factors"],
+    "query_type": "numerical",
+    "difficulty": "hard",
+    "note": "Tests complex multi-variable calculation with unit conversions - production measurement calculation"
+  },
+  {
+    "query_id": "q15_general",
+    "query": "What is the purpose of using a pig in pipeline operations and how often should pigging be performed?",
+    "ground_truth_answer": "Pipeline pigs serve multiple purposes: (1) cleaning - remove paraffin, scale, and debris, (2) inspection - carry sensors to detect corrosion and defects, (3) batching - separate different products, (4) dewatering - remove liquids from gas lines. Pigging frequency depends on service: crude oil lines typically every 1-3 months; gas lines every 3-6 months or when pressure drop exceeds 5% of baseline; product lines between batch changes. Establish frequency based on debris accumulation rate from initial runs.",
+    "relevant_element_ids": ["pigging_procedures", "pipeline_maintenance_schedule", "pig_types_and_applications"],
+    "query_type": "general",
+    "difficulty": "easy",
+    "note": "Tests general operational knowledge - common maintenance practice across petroleum industry"
+  }
+]
