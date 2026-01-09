@@ -1,0 +1,112 @@
+[
+  {
+    "test_id": "TC001_ALKYLATION_ECONOMICS",
+    "question": "What is the estimated capital cost range per barrel per day for a 7,500 BPSD Exxon stirred autorefrigerated alkylation plant on the U.S. Gulf Coast?",
+    "ground_truth": "The total capital required for a plant erected in 1995 on the U.S. Gulf Coast varies from $60 to $85 per metric ton per year ($2,500 to $3,500 per barrel per day) of C5+ polymer gasoline.",
+    "required_terms": ["$2,500", "$3,500", "barrel per day", "U.S. Gulf Coast"],
+    "forbidden_terms": ["$1,000", "$5,000", "HF alkylation"],
+    "source_location": "Chapter 1.1 - Exxon Sulfuric Acid Alkylation Technology, Economics section",
+    "difficulty": "medium",
+    "scoring_type": "numerical",
+    "failure_mode_tested": "Numerical precision retrieval - tests if system can extract specific dollar figures from economic tables"
+  },
+  {
+    "test_id": "TC002_ALKYLATION_REACTIONS",
+    "question": "What are the four types of secondary reactions that reduce octane in alkylation, and what is an example equation for the polymerization reaction?",
+    "ground_truth": "The four secondary reactions are: 1) Polymerization (e.g., 2C₄H₈ → C₈H₁₆), 2) Hydrogen transfer (e.g., 2C₄H₁₀ + C₃H₆ → C₈H₁₈ + C₃H₈), 3) Disproportionation (e.g., 2C₈H₁₈ → C₇H₁₆ + C₉H₂₀), 4) Cracking (e.g., C₁₂H₂₆ → C₄H₈ + C₈H₁₈). These secondary reactions produce a wide spectrum of compounds that tend to reduce the octane to about the 96 octane level from the theoretical ~100 octane of pure trimethylpentane.",
+    "required_terms": ["polymerization", "hydrogen transfer", "disproportionation", "cracking", "96"],
+    "forbidden_terms": ["isomerization as secondary"],
+    "source_location": "Chapter 1.1 - Exxon Sulfuric Acid Alkylation Technology, Chemistry Overview section",
+    "difficulty": "hard",
+    "scoring_type": "multi-part",
+    "failure_mode_tested": "Multi-part answer synthesis - tests if system can enumerate a complete list and provide supporting detail"
+  },
+  {
+    "test_id": "TC003_REACTOR_COOLING_COMPARISON",
+    "question": "Why is autorefrigeration more energy-efficient than indirect effluent refrigeration for alkylation reactor cooling?",
+    "ground_truth": "Autorefrigeration is more efficient because: 1) Zero temperature difference between reaction mass and refrigerant (direct vaporization from reaction mass), 2) Indirect effluent refrigeration requires a finite temperature difference for heat transfer across tubes necessitating lower refrigeration temperatures, 3) Lower refrigerant temperature requires lower compressor suction pressure resulting in higher compressor energy requirements, 4) Effluent refrigeration requires additional mixing power to overcome pressure drop across heat-transfer tubes, 5) The additional heat of mixing must also be removed increasing refrigeration duty.",
+    "required_terms": ["temperature difference", "compressor", "mixing power", "pressure drop"],
+    "forbidden_terms": ["autorefrigeration is less efficient", "effluent refrigeration preferred"],
+    "source_location": "Chapter 1.1 - Reactor Cooling via Autorefrigeration Is More Efficient Than Effluent Refrigeration section",
+    "difficulty": "hard",
+    "scoring_type": "semantic",
+    "failure_mode_tested": "Reasoning chain retrieval - tests if system retrieves complete causal explanation rather than partial answer"
+  },
+  {
+    "test_id": "TC004_CUMENE_PRODUCT_SPECS",
+    "question": "What are the product purity specifications for cumene produced by the Dow-Kellogg Cumene Process?",
+    "ground_truth": "Cumene purity: minimum 99.97 wt%, Bromine index: maximum 5, Ethylbenzene: maximum 100 ppm, n-Propylbenzene: maximum 200 ppm, Butylbenzene: maximum 100 ppm.",
+    "required_terms": ["99.97", "bromine index", "5", "ppm"],
+    "forbidden_terms": ["99.5%", "99.0%"],
+    "source_location": "Chapter 1.2 - The Dow-Kellogg Cumene Process, Table 1.2.2",
+    "difficulty": "medium",
+    "scoring_type": "exact",
+    "failure_mode_tested": "Table data extraction - tests if system correctly parses tabular specifications"
+  },
+  {
+    "test_id": "TC005_CATALYTIC_CONDENSATION_FLOW",
+    "question": "In the UOP Catalytic Condensation process for gasoline production, what is the purpose of the depropanizer and what happens to the propane overhead stream?",
+    "ground_truth": "The depropanizer removes propane that enters the unit with the feed to prevent propane buildup in the alkylation plant. A small slipstream of refrigerant is depropanized after being caustic- and water-washed to remove any SO₂. The propane overhead is sent to storage, while the isobutane-rich bottoms are returned to the process.",
+    "required_terms": ["propane", "buildup", "caustic", "water-washed", "SO₂", "storage", "isobutane", "bottoms"],
+    "forbidden_terms": ["propane recycled to reactor", "propane flared"],
+    "source_location": "Chapter 1.3 - UOP Catalytic Condensation Process, Process Description section",
+    "difficulty": "medium",
+    "scoring_type": "semantic",
+    "failure_mode_tested": "Process flow comprehension - tests if system understands material flow and purpose"
+  },
+  {
+    "test_id": "TC006_FEED_CONTAMINANTS",
+    "question": "How much additional makeup sulfuric acid is required per pound of mercaptan sulfur in the alkylation feed, and why is feed pretreatment necessary?",
+    "ground_truth": "Roughly 40 pounds of additional makeup acid are needed for each pound of mercaptan sulfur that enters the plant with the feed. This is because mercaptan sulfur reacts with sulfuric acid to form sulfonic acid and water (acid-soluble compounds) plus sulfur dioxide: RSH + 3H₂SO₄ → RSO₃H + 3H₂O + 3SO₂. The acid-soluble compounds must be purged from the plant with spent acid, increasing makeup requirements. Caustic treating facilities are always provided to remove sulfur from the olefin feed.",
+    "required_terms": ["40 pounds", "mercaptan", "sulfonic acid", "caustic treating"],
+    "forbidden_terms": ["10 pounds", "100 pounds"],
+    "source_location": "Chapter 1.1 - Exxon Sulfuric Acid Alkylation Technology, Feed Impurities Form Acid-Soluble Compounds section",
+    "difficulty": "hard",
+    "scoring_type": "numerical",
+    "failure_mode_tested": "Quantitative relationship with chemical explanation - tests combined retrieval of number + mechanism"
+  },
+  {
+    "test_id": "TC007_REACTOR_DIFFERENCES",
+    "question": "What are the key design differences between modern ER&E-designed autorefrigeration reactors and older industry designs, specifically regarding acid-to-hydrocarbon ratio and space velocity?",
+    "ground_truth": "Modern ER&E designs have: Acid/hydrocarbon mixing via special mixers (vs submerged pumps), Isobutane/olefin premixed (vs not premixed), Olefin feed injectors using special nozzles (vs open pipe), Acid-to-hydrocarbon ratio of ~1.5 (vs <0.5), Space velocity of 0.1 (vs 0.3), Pressure controllers per reactor of 2 (vs up to 10).",
+    "required_terms": ["0.1", "0.3", "1.5", "0.5", "special mixers", "special nozzles"],
+    "forbidden_terms": ["identical design", "no difference"],
+    "source_location": "Chapter 1.1 - Table 1.1.1, Modern ER&E Reactor Is a Vast Improvement over Older System section",
+    "difficulty": "expert",
+    "scoring_type": "exact",
+    "failure_mode_tested": "Comparative table extraction - tests if system can retrieve and contrast values from comparison tables"
+  },
+  {
+    "test_id": "TC008_DISTILLATE_YIELDS",
+    "question": "For the UOP Catalytic Condensation process in distillate production mode using FCC C₃-C₄ LPG feed with 59 LV% olefin content, what are the product yields in liquid volume percent?",
+    "ground_truth": "C₃-C₄ LPG: 41.2 LV%, Polymer gasoline: 8.3 LV%, Distillate: 34.0 LV%, Heavy polymer: 0.8 LV%, Total: 84.3 LV%. Note: Overall liquid yield is 84.3 LV% because net volume loss occurs as a result of the oligomerization of olefins.",
+    "required_terms": ["41.2", "8.3", "34.0", "0.8", "84.3", "volume loss"],
+    "forbidden_terms": ["100%", "95%"],
+    "source_location": "Chapter 1.3 - Table 1.3.4, Yields and Product Properties section",
+    "difficulty": "medium",
+    "scoring_type": "numerical",
+    "failure_mode_tested": "Multi-row table extraction with context - tests if system retrieves complete yield breakdown"
+  },
+  {
+    "test_id": "TC009_HF_ALKYLATION_FLOW",
+    "question": "In a UOP HF Alkylation unit processing C₃-C₄ olefins, describe the path of the isostripper overhead stream and explain the purpose of the HF stripper.",
+    "ground_truth": "The isostripper overhead consists mainly of isobutane, propane, and HF acid. A drag stream of overhead material is charged to the HF stripper to strip the acid. The overhead from the HF stripper is returned to the isostripper overhead system to recover acid and isobutane. A portion of the HF stripper bottoms is used as flushing material. A net bottom stream is withdrawn, defluorinated, and charged to the gas-concentration section (C₃-C₄ splitter) to prevent buildup of propane in the HF Alkylation unit.",
+    "required_terms": ["isobutane", "propane", "HF acid", "drag stream", "defluorinated", "flushing"],
+    "forbidden_terms": ["HF vented", "acid disposal"],
+    "source_location": "Chapter 1.4 - UOP HF Alkylation Technology, Process Description section",
+    "difficulty": "hard",
+    "scoring_type": "semantic",
+    "failure_mode_tested": "Sequential process flow - tests if system can trace material through multiple unit operations"
+  },
+  {
+    "test_id": "TC010_CATALYST_DISPOSAL",
+    "question": "Does the Dow-Kellogg Cumene Process produce environmentally difficult effluents, and what are the catalyst disposal requirements?",
+    "ground_truth": "No, the Dow-Kellogg Cumene Process produces no environmentally difficult effluents. The zeolite catalyst (3DDM) is very sturdy and regenerable, so there is no catalyst disposal concern as in other commercial processes. Spent catalyst is benign and requires no special disposal considerations other than normal landfill. The only emissions are normal stack emissions from heaters (hot-oil system), BFW blowdown from steam generators, and vacuum jet or vacuum pump vents.",
+    "required_terms": ["no environmentally difficult effluents", "benign", "normal landfill", "regenerable"],
+    "forbidden_terms": ["hazardous waste", "special disposal required", "acid disposal"],
+    "source_location": "Chapter 1.2 - Wastes and Emissions section and Process Features section",
+    "difficulty": "medium",
+    "scoring_type": "semantic",
+    "failure_mode_tested": "Negative assertion retrieval - tests if system correctly identifies what a process does NOT produce"
+  }
+]
