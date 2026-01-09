@@ -260,6 +260,70 @@ def main():
                 f"{total_time / 60:.1f} min",
             )
 
+        # Cache Performance Section
+        cache_stats = summary.get("cache_statistics", {})
+        if cache_stats:
+            st.subheader("Cache Performance")
+
+            # Calculate overall cache hit rate
+            total_hits = sum(s.get("hits", 0) for s in cache_stats.values())
+            total_misses = sum(s.get("misses", 0) for s in cache_stats.values())
+            total_cache_requests = total_hits + total_misses
+            overall_hit_rate = total_hits / total_cache_requests if total_cache_requests > 0 else 0
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+                st.metric(
+                    "Overall Hit Rate",
+                    f"{overall_hit_rate:.1%}",
+                    help="Percentage of cache hits across all caches"
+                )
+
+            with col2:
+                st.metric(
+                    "Total Hits",
+                    f"{total_hits:,}",
+                    help="Total number of cache hits"
+                )
+
+            with col3:
+                st.metric(
+                    "Total Misses",
+                    f"{total_misses:,}",
+                    help="Total number of cache misses"
+                )
+
+            with col4:
+                cost_savings = overall_hit_rate * 100 if overall_hit_rate > 0 else 0
+                st.metric(
+                    "Cost Savings",
+                    f"~{cost_savings:.0f}%",
+                    help="Estimated cost savings from cache hits"
+                )
+
+            # Detailed cache stats
+            with st.expander("Detailed Cache Statistics", expanded=False):
+                cache_data = []
+                for cache_type, stats in cache_stats.items():
+                    cache_data.append({
+                        "Cache Type": cache_type.title(),
+                        "Hit Rate": f"{stats.get('hit_rate', 0):.1%}",
+                        "Hits": stats.get("hits", 0),
+                        "Misses": stats.get("misses", 0),
+                        "Memory Items": stats.get("memory_size", 0),
+                        "Disk Items": stats.get("disk_items", 0),
+                        "Disk Size (MB)": f"{stats.get('disk_mb', 0):.2f}",
+                    })
+
+                cache_df = pd.DataFrame(cache_data)
+                st.dataframe(cache_df, use_container_width=True, hide_index=True)
+
+                st.info(
+                    "Cache hit rates vary based on query patterns. First runs have lower hit rates, "
+                    "while subsequent runs with similar queries can achieve 90%+ hit rates."
+                )
+
         st.subheader("Winner")
 
         winner_row = df.iloc[0]

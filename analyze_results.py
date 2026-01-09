@@ -499,6 +499,50 @@ class ResultsAnalyzer:
             f.write(f"- **Total Results**: {summary.get('total_results', 'N/A')}\n")
             f.write(f"- **Total Time**: {summary.get('total_time_seconds', 0) / 60:.1f} minutes\n\n")
 
+            # Cache Statistics
+            cache_stats = summary.get("cache_statistics", {})
+            if cache_stats:
+                f.write("## Cache Performance\n\n")
+                f.write("Caching significantly improves performance by avoiding redundant API calls.\n\n")
+
+                # Create cache statistics table
+                f.write("| Cache Type | Hit Rate | Hits | Misses | Total Requests | Memory Items | Disk Items | Disk Size |\n")
+                f.write("|------------|----------|------|--------|----------------|--------------|------------|------------|\n")
+
+                for cache_type, stats in cache_stats.items():
+                    hit_rate = stats.get("hit_rate", 0)
+                    hits = stats.get("hits", 0)
+                    misses = stats.get("misses", 0)
+                    total_requests = stats.get("total_requests", 0)
+                    memory_size = stats.get("memory_size", 0)
+                    disk_items = stats.get("disk_items", 0)
+                    disk_mb = stats.get("disk_mb", 0)
+
+                    f.write(
+                        f"| {cache_type.title()} | {hit_rate:.1%} | {hits} | {misses} | "
+                        f"{total_requests} | {memory_size} | {disk_items} | {disk_mb:.2f} MB |\n"
+                    )
+
+                f.write("\n")
+
+                # Calculate overall cache hit rate
+                total_hits = sum(s.get("hits", 0) for s in cache_stats.values())
+                total_misses = sum(s.get("misses", 0) for s in cache_stats.values())
+                total_cache_requests = total_hits + total_misses
+                overall_hit_rate = total_hits / total_cache_requests if total_cache_requests > 0 else 0
+
+                f.write(f"**Overall Cache Hit Rate**: {overall_hit_rate:.1%}\n\n")
+
+                # Cost savings estimate
+                if overall_hit_rate > 0:
+                    cost_savings = overall_hit_rate * 100
+                    f.write(f"**Estimated Cost Savings**: ~{cost_savings:.0f}% on cached operations\n\n")
+                    f.write(
+                        "Cache hit rates vary based on query patterns and document reuse. "
+                        "First runs will have lower hit rates, while subsequent runs with similar "
+                        "queries can achieve 90%+ hit rates.\n\n"
+                    )
+
             # Winner
             f.write("## Winner\n\n")
             f.write(f"**{winner_info['combination']}**\n\n")

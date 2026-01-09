@@ -106,6 +106,9 @@ class ContentCache:
             self.stats["memory_hits"] += 1
             logger.debug(f"Memory cache hit: {key[:16]}...")
 
+            # Update Prometheus metrics
+            self._update_prometheus_metrics()
+
             # Move to end for LRU (most recently used)
             self._memory_cache.move_to_end(key)
             return self._memory_cache[key]
@@ -122,6 +125,9 @@ class ContentCache:
                 self.stats["disk_hits"] += 1
                 logger.debug(f"Disk cache hit: {key[:16]}...")
 
+                # Update Prometheus metrics
+                self._update_prometheus_metrics()
+
                 # Load into memory cache for faster future access
                 self._add_to_memory(key, data)
                 return data
@@ -136,6 +142,10 @@ class ContentCache:
         # Cache miss
         self.stats["misses"] += 1
         logger.debug(f"Cache miss: {key[:16]}...")
+
+        # Update Prometheus metrics
+        self._update_prometheus_metrics()
+
         return None
 
     async def set(self, key: str, value: Any) -> None:
@@ -248,6 +258,37 @@ class ContentCache:
             "disk_bytes": disk_bytes,
             "disk_mb": round(disk_bytes / (1024 * 1024), 2),
         }
+
+    def _update_prometheus_metrics(self) -> None:
+        """Update Prometheus metrics with current cache statistics.
+
+        This method updates the Prometheus gauges with the latest cache
+        hit rate and size information. It's called after each cache
+        operation to keep metrics in sync.
+        """
+        try:
+            # Import here to avoid circular dependency
+            from utils.metrics import update_cache_metrics
+
+            stats = self.get_stats()
+            size = self.get_size()
+
+            # Determine cache type from directory name
+            cache_type = "unknown"
+            if "embedding" in str(self.cache_dir).lower():
+                cache_type = "embedding"
+            elif "llm" in str(self.cache_dir).lower():
+                cache_type = "llm"
+
+            # Update Prometheus metrics
+            update_cache_metrics(
+                cache_type=cache_type,
+                size=size["memory_items"],
+                hit_rate=stats["hit_rate"],
+            )
+        except Exception as e:
+            # Don't let metrics failures break cache functionality
+            logger.debug(f"Failed to update Prometheus metrics: {e}")
 
     def __repr__(self) -> str:
         """String representation of the cache."""

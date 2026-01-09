@@ -92,7 +92,10 @@ class BenchmarkRunner:
             raise
 
     async def parse_documents(self, input_dir: Path) -> dict[str, ParsedDocument]:
-        """Parse all documents with all parsers in parallel.
+        """Parse all documents with all parsers.
+
+        Uses parallel execution if benchmark_parallel_parsers is True,
+        otherwise runs sequentially for compatibility.
 
         Args:
             input_dir: Directory containing input PDFs
@@ -111,36 +114,96 @@ class BenchmarkRunner:
         # For now, parse just the first document with all parsers
         # In production, would iterate over all documents
         pdf_file = pdf_files[0]
-        logger.info(f"Parsing {pdf_file.name} with all parsers")
 
-        parsed_docs = {}
-
-        # Parse with each parser
-        for parser in tqdm(self.parsers, desc="Parsing with all parsers"):
-            try:
-                logger.info(f"Parsing with {parser.name}")
-                start_time = datetime.now(timezone.utc)
-
-                parsed_doc = await parser.parse(pdf_file)
-
-                elapsed = (datetime.now(timezone.utc) - start_time).total_seconds()
-                logger.info(
-                    f"{parser.name}: Parsed in {elapsed:.2f}s, "
-                    f"extracted {len(parsed_doc.elements)} elements"
-                )
-
-                parsed_docs[parser.name] = parsed_doc
-                self.parsed_documents[parser.name] = parsed_doc
-
-                # Save intermediate result
-                if settings.benchmark_save_intermediate_results:
-                    self._save_parsed_document(parsed_doc)
-
-            except Exception as e:
-                logger.error(f"Failed to parse with {parser.name}: {e}", exc_info=True)
-                # Continue with other parsers
+        if settings.benchmark_parallel_parsers:
+            logger.info(f"Parsing {pdf_file.name} with all parsers IN PARALLEL")
+            parsed_docs = await self._parse_parallel(pdf_file)
+        else:
+            logger.info(f"Parsing {pdf_file.name} with all parsers SEQUENTIALLY")
+            parsed_docs = await self._parse_sequential(pdf_file)
 
         logger.info(f"Successfully parsed with {len(parsed_docs)}/{len(self.parsers)} parsers")
+        return parsed_docs
+
+    async def _parse_single_parser(
+        self,
+        parser: Any,
+        pdf_file: Path
+    ) -> tuple[str, ParsedDocument | None]:
+        """Parse document with a single parser.
+
+        Args:
+            parser: Parser instance to use
+            pdf_file: Path to PDF file
+
+        Returns:
+            Tuple of (parser_name, parsed_document or None if failed)
+        """
+        try:
+            logger.info(f"Parsing with {parser.name}")
+            start_time = datetime.now(timezone.utc)
+
+            parsed_doc = await parser.parse(pdf_file)
+
+            elapsed = (datetime.now(timezone.utc) - start_time).total_seconds()
+            logger.info(
+                f"{parser.name}: Parsed in {elapsed:.2f}s, "
+                f"extracted {len(parsed_doc.elements)} elements"
+            )
+
+            # Save intermediate result
+            if settings.benchmark_save_intermediate_results:
+                self._save_parsed_document(parsed_doc)
+
+            return (parser.name, parsed_doc)
+
+        except Exception as e:
+            logger.error(f"Failed to parse with {parser.name}: {e}", exc_info=True)
+            return (parser.name, None)
+
+    async def _parse_parallel(self, pdf_file: Path) -> dict[str, ParsedDocument]:
+        """Parse document with all parsers in parallel.
+
+        Args:
+            pdf_file: Path to PDF file
+
+        Returns:
+            Dictionary mapping parser_name to ParsedDocument
+        """
+        # Create tasks for all parsers
+        tasks = [self._parse_single_parser(parser, pdf_file) for parser in self.parsers]
+
+        # Execute in parallel
+        results = await asyncio.gather(*tasks)
+
+        # Build results dictionary, filtering out failures
+        parsed_docs = {}
+        for parser_name, parsed_doc in results:
+            if parsed_doc is not None:
+                parsed_docs[parser_name] = parsed_doc
+                self.parsed_documents[parser_name] = parsed_doc
+
+        return parsed_docs
+
+    async def _parse_sequential(self, pdf_file: Path) -> dict[str, ParsedDocument]:
+        """Parse document with all parsers sequentially.
+
+        Args:
+            pdf_file: Path to PDF file
+
+        Returns:
+            Dictionary mapping parser_name to ParsedDocument
+        """
+        parsed_docs = {}
+
+        # Parse with each parser sequentially
+        for parser in tqdm(self.parsers, desc="Parsing with all parsers"):
+            parser_name, parsed_doc = await self._parse_single_parser(parser, pdf_file)
+
+            if parsed_doc is not None:
+                parsed_docs[parser_name] = parsed_doc
+                self.parsed_documents[parser_name] = parsed_doc
+
         return parsed_docs
 
     async def store_in_backends(
@@ -149,6 +212,9 @@ class BenchmarkRunner:
         parsed_doc: ParsedDocument,
     ) -> None:
         """Store parsed document in all storage backends.
+
+        Uses parallel execution if benchmark_parallel_storage is True,
+        otherwise runs sequentially for compatibility.
 
         Args:
             parser_name: Name of parser used
@@ -168,17 +234,99 @@ class BenchmarkRunner:
 
         logger.info(f"Generated {len(embeddings)} embeddings")
 
-        # Store in each backend
-        for backend in tqdm(self.storage_backends, desc=f"Storing {parser_name} in backends"):
-            try:
-                logger.info(f"Storing in {backend.name}")
-                await backend.clear()  # Clear previous data
-                await backend.store_chunks(chunks, embeddings)
-                logger.info(f"Successfully stored in {backend.name}")
+        # Store in each backend - parallel or sequential based on config
+        if settings.benchmark_parallel_storage:
+            logger.info(f"Storing in {len(self.storage_backends)} backends IN PARALLEL")
+            await self._store_parallel(parser_name, chunks, embeddings)
+        else:
+            logger.info(f"Storing in {len(self.storage_backends)} backends SEQUENTIALLY")
+            await self._store_sequential(parser_name, chunks, embeddings)
 
-            except Exception as e:
-                logger.error(f"Failed to store in {backend.name}: {e}", exc_info=True)
-                # Continue with other backends
+    async def _store_single_backend(
+        self,
+        backend: Any,
+        parser_name: str,
+        chunks: list,
+        embeddings: list,
+    ) -> tuple[str, bool, str | None]:
+        """Store chunks in a single backend with error handling.
+
+        Args:
+            backend: Storage backend instance
+            parser_name: Name of parser used
+            chunks: List of chunks to store
+            embeddings: List of embeddings
+
+        Returns:
+            Tuple of (backend_name, success, error_message)
+        """
+        try:
+            logger.info(f"Storing in {backend.name}")
+            await backend.clear()  # Clear previous data
+            await backend.store_chunks(chunks, embeddings)
+            logger.info(f"Successfully stored in {backend.name}")
+            return (backend.name, True, None)
+
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Failed to store in {backend.name}: {error_msg}", exc_info=True)
+            return (backend.name, False, error_msg)
+
+    async def _store_parallel(
+        self,
+        parser_name: str,
+        chunks: list,
+        embeddings: list,
+    ) -> None:
+        """Store chunks in all backends in parallel using asyncio.gather.
+
+        Args:
+            parser_name: Name of parser used
+            chunks: List of chunks to store
+            embeddings: List of embeddings
+        """
+        # Create tasks for all backends
+        tasks = [
+            self._store_single_backend(backend, parser_name, chunks, embeddings)
+            for backend in self.storage_backends
+        ]
+
+        # Execute all storage operations in parallel
+        results = await asyncio.gather(*tasks)
+
+        # Log summary of results
+        successful = []
+        failed = []
+
+        for result in results:
+            backend_name, success, error_msg = result
+            if success:
+                successful.append(backend_name)
+            else:
+                failed.append((backend_name, error_msg))
+
+        logger.info(
+            f"Parallel storage complete: {len(successful)}/{len(self.storage_backends)} succeeded"
+        )
+        if failed:
+            logger.warning(f"Failed backends: {[name for name, _ in failed]}")
+
+    async def _store_sequential(
+        self,
+        parser_name: str,
+        chunks: list,
+        embeddings: list,
+    ) -> None:
+        """Store chunks in all backends sequentially.
+
+        Args:
+            parser_name: Name of parser used
+            chunks: List of chunks to store
+            embeddings: List of embeddings
+        """
+        # Store in each backend sequentially
+        for backend in tqdm(self.storage_backends, desc=f"Storing {parser_name} in backends"):
+            await self._store_single_backend(backend, parser_name, chunks, embeddings)
 
     async def run_queries(
         self,
@@ -324,6 +472,9 @@ class BenchmarkRunner:
                 # Calculate aggregate statistics
                 total_time = (datetime.now(timezone.utc) - start_time).total_seconds()
 
+                # Collect cache statistics
+                cache_stats = self._collect_cache_statistics()
+
                 summary = {
                     "total_combinations": len(self.parsers) * len(self.storage_backends),
                     "total_queries": len(queries),
@@ -332,6 +483,7 @@ class BenchmarkRunner:
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                     "parsers": [p.name for p in self.parsers],
                     "storage_backends": [b.name for b in self.storage_backends],
+                    "cache_statistics": cache_stats,
                 }
 
                 logger.info("\n" + "=" * 80)
@@ -341,6 +493,22 @@ class BenchmarkRunner:
                 logger.info(f"Total queries: {summary['total_queries']}")
                 logger.info(f"Total results: {summary['total_results']}")
                 logger.info(f"Total time: {total_time / 60:.1f} minutes")
+
+                # Log cache statistics
+                if cache_stats:
+                    logger.info("\n" + "=" * 80)
+                    logger.info("CACHE STATISTICS")
+                    logger.info("=" * 80)
+                    for cache_type, stats in cache_stats.items():
+                        logger.info(f"\n{cache_type.upper()} Cache:")
+                        logger.info(f"  Hit Rate: {stats['hit_rate']:.1%}")
+                        logger.info(f"  Total Hits: {stats['hits']}")
+                        logger.info(f"  Total Misses: {stats['misses']}")
+                        logger.info(f"  Total Requests: {stats['total_requests']}")
+                        logger.info(f"  Memory Items: {stats['memory_size']}")
+                        logger.info(f"  Disk Items: {stats.get('disk_items', 0)}")
+                        if stats.get('disk_mb'):
+                            logger.info(f"  Disk Size: {stats['disk_mb']:.2f} MB")
 
                 # Save results
                 self._save_results(output_dir, summary)
@@ -410,6 +578,46 @@ class BenchmarkRunner:
             json.dump(doc_data, f, indent=2)
 
         logger.debug(f"Saved parsed document to {output_file}")
+
+    def _collect_cache_statistics(self) -> dict[str, dict[str, Any]]:
+        """Collect statistics from all cache instances.
+
+        Returns:
+            Dictionary mapping cache type to statistics
+        """
+        cache_stats = {}
+
+        try:
+            from utils.cache import get_embedding_cache, get_llm_cache
+
+            # Get embedding cache stats
+            try:
+                emb_cache = get_embedding_cache()
+                emb_stats = emb_cache.get_stats()
+                emb_size = emb_cache.get_size()
+                cache_stats["embedding"] = {
+                    **emb_stats,
+                    **emb_size,
+                }
+            except Exception as e:
+                logger.debug(f"Could not get embedding cache stats: {e}")
+
+            # Get LLM cache stats
+            try:
+                llm_cache = get_llm_cache()
+                llm_stats = llm_cache.get_stats()
+                llm_size = llm_cache.get_size()
+                cache_stats["llm"] = {
+                    **llm_stats,
+                    **llm_size,
+                }
+            except Exception as e:
+                logger.debug(f"Could not get LLM cache stats: {e}")
+
+        except ImportError as e:
+            logger.debug(f"Could not import cache modules: {e}")
+
+        return cache_stats
 
     def _save_results(self, output_dir: Path, summary: dict[str, Any]) -> None:
         """Save benchmark results to disk.

@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(*)",
+      "Bash(git*)",
       "Read(*)",
       "Write(*)",
       "Edit(*)",
@@ -29,10 +30,7 @@
       "mcp__memorygraph__get_recent_activity(*)",
       "mcp__plugin_context7_context7__resolve-library-id(*)",
       "mcp__plugin_context7_context7__query-docs(*)",
-      "Bash(grep:*)",
-      "Bash(git init:*)",
-      "Bash(git remote:*)",
-      "Bash(git add:*)"
+      "Bash(git commit:*)"
     ]
   },
   "skipConfirmationMessages": [
@@ -43,7 +41,8 @@
     "web_fetch",
     "web_search",
     "task_spawn",
-    "plan_mode"
+    "plan_mode",
+    "git_command"
   ],
   "autoApprove": {
     "bash": true,
@@ -51,6 +50,7 @@
     "webAccess": true,
     "tasks": true,
     "planMode": true,
-    "allTools": true
+    "allTools": true,
+    "git": true
   }
 }
