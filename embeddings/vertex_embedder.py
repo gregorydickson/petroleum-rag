@@ -60,6 +60,7 @@ class VertexEmbedder:
 
     def __init__(
         self,
+        api_key: str | None = None,
         project: str | None = None,
         location: str | None = None,
         model: str | None = None,
@@ -68,7 +69,12 @@ class VertexEmbedder:
     ) -> None:
         """Initialize the Vertex AI embedder.
 
+        Supports two authentication methods:
+        1. API Key (simpler) - Set VERTEX_API_KEY in environment
+        2. Service Account (traditional) - Set GOOGLE_APPLICATION_CREDENTIALS
+
         Args:
+            api_key: Vertex AI Studio API key (defaults to settings)
             project: GCP project ID (defaults to settings)
             location: GCP location (defaults to settings)
             model: Embedding model name (defaults to settings)
@@ -76,15 +82,10 @@ class VertexEmbedder:
             batch_size: Batch size for processing (defaults to settings)
 
         Raises:
-            ValueError: If project is not provided or credentials not found
+            ValueError: If neither API key nor service account credentials provided
         """
+        self.api_key = api_key or settings.vertex_api_key
         self.project = project or settings.google_cloud_project
-        if not self.project:
-            raise ValueError(
-                "GCP project must be provided via project parameter or "
-                "GOOGLE_CLOUD_PROJECT environment variable"
-            )
-
         self.location = location or settings.vertex_docai_location or "us-central1"
         self.model = model or settings.vertex_embedding_model or "textembedding-gecko@003"
 
@@ -105,18 +106,40 @@ class VertexEmbedder:
             self.MAX_BATCH_SIZE,
         )
 
-        # Initialize Vertex AI
+        # Initialize Vertex AI with API key if provided, otherwise use service account
         try:
-            aiplatform.init(project=self.project, location=self.location)
-            logger.info(
-                f"VertexEmbedder initialized with model={self.model}, "
-                f"project={self.project}, location={self.location}, "
-                f"dimensions={self.dimensions}, batch_size={self.batch_size}"
-            )
+            if self.api_key:
+                # API key authentication (simpler)
+                import vertexai
+                vertexai.init(
+                    project=self.project,
+                    location=self.location,
+                    api_key=self.api_key,
+                )
+                logger.info(
+                    f"VertexEmbedder initialized with API key authentication: "
+                    f"model={self.model}, location={self.location}, "
+                    f"dimensions={self.dimensions}, batch_size={self.batch_size}"
+                )
+            else:
+                # Service account authentication (traditional)
+                if not self.project:
+                    raise ValueError(
+                        "GCP project must be provided via project parameter or "
+                        "GOOGLE_CLOUD_PROJECT environment variable"
+                    )
+                aiplatform.init(project=self.project, location=self.location)
+                logger.info(
+                    f"VertexEmbedder initialized with service account: "
+                    f"model={self.model}, project={self.project}, location={self.location}, "
+                    f"dimensions={self.dimensions}, batch_size={self.batch_size}"
+                )
         except Exception as e:
             raise ValueError(
-                f"Failed to initialize Vertex AI. Make sure GOOGLE_APPLICATION_CREDENTIALS "
-                f"is set and points to a valid service account key: {e}"
+                f"Failed to initialize Vertex AI. Make sure either:\n"
+                f"1. VERTEX_API_KEY is set (Vertex AI Studio API key), OR\n"
+                f"2. GOOGLE_APPLICATION_CREDENTIALS is set (service account JSON path)\n"
+                f"Error: {e}"
             ) from e
 
     async def embed_text(self, text: str) -> list[float]:

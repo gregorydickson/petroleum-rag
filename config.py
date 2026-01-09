@@ -30,10 +30,14 @@ class Settings(BaseSettings):
     openai_api_key: str = Field(default="", description="OpenAI API key")
     anthropic_api_key: str = Field(default="", description="Anthropic API key")
 
-    # Google Cloud - Vertex Document AI
+    # Google Cloud - Vertex AI
+    vertex_api_key: str = Field(
+        default="",
+        description="Vertex AI Studio API key (simpler authentication)",
+    )
     google_application_credentials: str | None = Field(
         default=None,
-        description="Path to Google Cloud service account key",
+        description="Path to Google Cloud service account key (alternative to API key)",
     )
     google_cloud_project: str | None = Field(
         default=None,
